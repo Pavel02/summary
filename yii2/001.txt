@@ -1,0 +1,145 @@
+	
+	Официальный сайт - http://www.yiiframework.com/
+	Переводная документация:
+		- https://github.com/yiisoft/yii2/tree/master/docs/guide-ru
+		- https://yiiframework.com.ua/ru/doc/guide/2/
+		
+	http://www.yiiframework.com/doc-2.0/guide-index.html
+
+	http://www.yiiframework.com/doc-2.0/index.html			// Документация по классам и их методам.
+	
+	
+Установка
+	http://www.yiiframework.com/download/			// Из архива базовый шаблон 
+					//  в каталог  config  файл web.php  	'cookieValidationKey' => 'здесь любое значение'
+					
+	// Через Composer
+		// консоль openserver переходим в каталог 
+					composer self-update
+					composer global require "fxp/composer-asset-plugin:^1.2.0"
+					composer create-project yiisoft/yii2-app-basic ./ 2.0.11
+		// во время установки может потребоваться создать на github Personal access tokens и вставить в консоль
+		// переходим в каталог web  видим базовый шаблон
+		
+		
+Маршруты
+	В каталоге controllers   создаются файлы контроллеры с заглавной, а конечное Controller
+		например 			SiteController.php    UserController.php   PostController.php
+	Внутри класс   extends Controller 
+	В созданном классе содержатся методы, среди них  action 	
+		именование       actionAbout.php		actionHelloUser.php    actionGallery.php 		
+	
+	
+Виды 
+	В каталоге views     каталог layouts  здесь шаблоны  и каталог site в ней все виды нашего контроллера 
+	
+			-controllers
+				--SiteController.php
+			-views
+				--layouts
+				--site
+					---about.php
+					---login.php
+					---hello.php
+					
+	доступ идет по get параметрам web/index.php?r=site/about				
+	Рекомендация называть вид контроллера по имени  экшена контроллера
+	
+	В каталоге можем создать новый контроллер MyController
+						с таким содержимым (для примера)
+							namespace app\controllers;
+
+							use yii\web\Controller;
+
+							class MyController extends Controller		// либо ключевое слово use либо extends yii\web\Controller 
+							{
+								public function actionIndex()
+								{
+									return 'Action Index';
+								}
+							}
+	
+	тогда по логике 	web/index.php?r=my/index  будет работать
+	
+	Далее создадим вид контроллера 
+		в каталоге views создаем каталог  my   в нем файл  index.php (<h2>главная</h2>)
+		 но в файле MyController 
+							public function actionIndex()
+							{
+								return $this->render('index');
+							}
+								
+								
+								
+Параметры от пользователя
+		web/index.php?r=my/index&id=test		
+						
+							class MyController extends Controller
+							{
+								public function actionIndex($id = null)		// Передаем параметр в контроллер
+								{
+									$hi = 'Hello, World!';
+									$names = ['Ivanov', 'Petrov', 'Sidorov'];
+							//        return $this->render('index', ['hello' => $hi, 'names' => $names]);       Второй параметр это массив переменных
+									return $this->render('index', compact('hi', 'names', 'id'));
+								}
+							}
+		
+		и теперь переменная id будет доступна в виде контролера index.php
+		
+	
+Вложенные контролеры
+		Например для админки  http://yii.loc/web/index.php?r=admin/user/index.php
+		
+	В каталоге controllers  создаем  каталог  admin   в нем файл  UserController.php
+							<?php
+
+							namespace app\controllers\admin;
+
+							use yii\web\Controller;
+
+							class UserController extends Controller
+							{
+								public function actionIndex()
+								{
+									return $this->render('index');
+								}
+							}
+	
+	в каталоге views создаем каталог admin  в нем каталог  user  и файл   index.php
+
+		Другой вариант админки это модульная админка.
+	
+	
+Общий контроллер приложения
+	В каталоге controllers  создаем файл  AppControllers
+						<?php
+
+						namespace app\controllers;
+
+						use yii\web\Controller;
+
+						class AppController extends Controller
+						{
+							public function debug($arr)
+							{
+								echo'<pre>' . print_r($arr, true) . '</pre>';
+							}
+						}
+	Здесь в классе пишем нужный общий код. А далее все остальные контроллеры наследуются 
+	 уже от класса AppControllers. 
+	 
+	 
+
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
