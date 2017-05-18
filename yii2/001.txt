@@ -9,7 +9,8 @@
 	http://www.yiiframework.com/doc-2.0/index.html			// Документация по классам и их методам.
 	
 	
-Установка
+	
+02 Установка фреймворка
 	http://www.yiiframework.com/download/			// Из архива базовый шаблон 
 					//  в каталог  config  файл web.php  	'cookieValidationKey' => 'здесь любое значение'
 					
@@ -20,33 +21,53 @@
 					composer create-project yiisoft/yii2-app-basic ./ 2.0.11
 		// во время установки может потребоваться создать на github Personal access tokens и вставить в консоль
 		// переходим в каталог web  видим базовый шаблон
-		
-		
-Маршруты
+	
+	
+
+03 Вывод Hello World!
+ 04 Контролеры в Yii
+
+ Маршруты
+	Так называемый роутинг. 
+		В адрессной строке можем увидеть 	http://yii2/web/index.php?r=site/hello 
+		 здесь   r   это GET параметр со значением   site/hello
+		  первая часть  site  это именование контролера 	SiteContoller.php
+		  вторая часть  hello  это метод действие в этом контроллере 		actionHello() {...}
+		  
 	В каталоге controllers   создаются файлы контроллеры с заглавной, а конечное Controller
-		например 			SiteController.php    UserController.php   PostController.php
-	Внутри класс   extends Controller 
-	В созданном классе содержатся методы, среди них  action 	
-		именование       actionAbout.php		actionHelloUser.php    actionGallery.php 		
-	
-	
+											SiteController.php    UserController.php   PostController.php
+	Внутри класс   который расширяет extends Controller 
+	В созданном классе содержатся методы, среди них  методы-действия  action состоящие минимум из 2 слов 
+					именование       actionAbout.php		actionHelloUser.php    actionGallery.php 		
+		Например можем сделать действие
+									public function actionHello()
+									{
+										return $this->render('hello!');			// Здесь этот метод возвращает результат работы другого метода 
+																				// в метод рендер в виде строки передается название вида (ищется файл   hello.php )
+										//   return 'Hello, world';				// Можем просто вернуть строку. И эта строка выведется при вызове экшена 
+									}
+
 Виды 
 	В каталоге views     каталог layouts  здесь шаблоны  и каталог site в ней все виды нашего контроллера 
 	
 			-controllers
 				--SiteController.php
 			-views
-				--layouts
-				--site
-					---about.php
-					---login.php
+				--layouts				// Здесь шаблоны 
+				--site						// Это каталог  контроллера  SiteContoller
+					---about.php					// Здесь виды и именуются они по имени  метода действия  action
+					---login.php					// На самом деле виды можем именовать как угодно (просто в метод ->rander передаем название вида, но Рекомендовано именовать по имени  actionа )
 					---hello.php
+				--my						// Этот каталог будет относиться к контроллеру MyController  
+											// Каждому контроллеру свой каталог т.е. каждая папка вида принадлежит конкретному контроллеру
+											// и называются по имени контроллера
 					
 	доступ идет по get параметрам web/index.php?r=site/about				
 	Рекомендация называть вид контроллера по имени  экшена контроллера
 	
+	
 	В каталоге можем создать новый контроллер MyController
-						с таким содержимым (для примера)
+	 с таким содержимым (для примера)
 							namespace app\controllers;
 
 							use yii\web\Controller;
@@ -55,43 +76,41 @@
 							{
 								public function actionIndex()
 								{
-									return 'Action Index';
+									// return 'Action Index';			// Здесь просто выведет   Action Index   на белом фоне
+									return $this->render('index');			// здесь подтянет вид index.php    и  применит его к базовому шаблону в каталоге  /views/layouts/
 								}
 							}
 	
-	тогда по логике 	web/index.php?r=my/index  будет работать
-	
-	Далее создадим вид контроллера 
-		в каталоге views создаем каталог  my   в нем файл  index.php (<h2>главная</h2>)
-		 но в файле MyController 
-							public function actionIndex()
-							{
-								return $this->render('index');
-							}
-								
-								
+	Тогда по логике 	web/index.php?r=my/index  будет работать
+	 Но нужно создать вид контроллера 
+		в каталоге views создаем каталог  my   в нем файл  index.php (<h2>Action Index</h2>)
+		
+							
 								
 Параметры от пользователя
 		web/index.php?r=my/index&id=test		
 						
 							class MyController extends Controller
 							{
-								public function actionIndex($id = null)		// Передаем параметр в контроллер
+								public function actionIndex($id = null)						// Передаем параметр от пользователя в контроллер. 
 								{
 									$hi = 'Hello, World!';
 									$names = ['Ivanov', 'Petrov', 'Sidorov'];
-							//        return $this->render('index', ['hello' => $hi, 'names' => $names]);       Второй параметр это массив переменных
+							//        return $this->render('index', ['hello' => $hi, 'names' => $names]);       // Второй параметр это массив переменных, для передачи в вид 
 									return $this->render('index', compact('hi', 'names', 'id'));
 								}
 							}
-		
+	Параметры от пользователя могут быть переданы через строку запроса
+				web/index.php?r=my/index&id=test
+	Здесь  контролер   my   действие   index    и в этом экшене будет доступен   $id = 'test'			// см. код  в примере выше 
 		и теперь переменная id будет доступна в виде контролера index.php
 		
+	
 	
 Вложенные контролеры
 		Например для админки  http://yii.loc/web/index.php?r=admin/user/index.php
 		
-	В каталоге controllers  создаем  каталог  admin   в нем файл  UserController.php
+	В каталоге controllers  создаем  каталог  admin   в нем файл  UserController.php		// controllers/admin/UserController.php 
 							<?php
 
 							namespace app\controllers\admin;
@@ -106,13 +125,16 @@
 								}
 							}
 	
-	в каталоге views создаем каталог admin  в нем каталог  user  и файл   index.php
+	В каталоге views создаем каталог admin  в нем каталог  user  и файл   index.php			//  views/admin/user/index.php
+							<h1> Admin Zone </h1>											// 
+	теперь  http://yii.loc/web/index.php?r=admin/user/index.php   будет выводить    Admin Zone
+	
+	// также возможен Другой вариант админки это модульная админка.
 
-		Другой вариант админки это модульная админка.
 	
 	
-Общий контроллер приложения
-	В каталоге controllers  создаем файл  AppControllers
+05 Общий контроллер приложения 
+	В каталоге controllers  создаем файл  AppControllers.php		// 
 						<?php
 
 						namespace app\controllers;
@@ -126,16 +148,18 @@
 								echo'<pre>' . print_r($arr, true) . '</pre>';
 							}
 						}
-	Здесь в классе пишем нужный общий код. А далее все остальные контроллеры наследуются 
+	Здесь в классе пишем нужный общий код, который мы хотим использовать в других контроллерах.
+	 А далее все остальные контроллеры наследуются уже от этого общего контроллера
 	 уже от класса AppControllers. 
-	 
+	 Например функция дебага для удобного расспечатывания массива или объекта.
 	 
 
 	
+	Создадим новый контроллер  	 	controllers/PostController.php 
+			
 		
 		
-		
-		
+		$Yii::$app   	Это экземпляр приложения 
 		
 		
 		
