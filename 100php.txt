@@ -1,0 +1,79 @@
+Классы
+	$app instanceof Application;										// true  если  $app  объект класса  Application
+	
+	get_class($obj); 													// Возвращает имя класса, к которому принадлежит объект $obj
+	
+	bool property_exists ( mixed $class , string $property );			// Проверяет, содержит ли объект или класс указанный атрибут
+																		    В противоположность isset(), property_exists() возвращает TRUE даже если свойство имеет значение NULL.
+																		
+	array get_object_vars ( object $object )							// Возвращает видимые нестатические свойства указанного объекта object в соответствии с областью видимости.
+								
+	
+Массивы
+	$result = count(   );												// Подсчитывает количество элементов массива или что-то в объекте
+	
+	number array_sum ( array $array ) 									// Вычисляет сумму значений массива.
+	
+	bool array_key_exists ( mixed $key , array $array ) 				// Проверяет, присутствует ли в массиве указанный ключ или индекс
+	
+	array array_keys ( array $array)     								 // возвращает числовые и строковые ключи, содержащиеся в массиве array.
+
+	array array_map ( callable $callback , array $array1 [, array $... ] )    	// 	возвращает массив, содержащий элементы array1 после их обработки callback-функцией. Количество параметров, передаваемых callback-функции, должно совпадать с количеством массивов, переданным функции array_map(). Функция может быть анонимной.
+	
+	bool property_exists ( mixed $class , string $property );			// Проверяет, содержит ли объект или класс указанный атрибут
+																		    В противоположность isset(), property_exists() возвращает TRUE даже если свойство имеет значение NULL.
+		
+	bool in_array ( mixed $needle , array $haystack [, bool $strict = FALSE ] );		// Проверяет, присутствует ли в массиве значение																		
+								
+	bool is_array ( mixed $var ) 										// Определяет, является ли переменная массивом
+	
+	mixed end ( array &$array )											// устанавливает внутренний указатель array на последний элемент и возвращает его значение. 																	
+																		// Если массив пустой, то возвращает  false 
+																		
+	array explode ( string $delimiter , string $string [, int $limit = PHP_INT_MAX ] )   	// Возвращает массив строк, полученных разбиением строки string с использованием delimiter в качестве разделителя.	
+
+	
+		
+	
+	
+Файлы
+	bool file_exists ( string $filename )   							// Проверяет наличие указанного файла или каталога. filename Путь к файлу или каталогу. 
+	
+	int file_put_contents ( string $filename , mixed $data [, int $flags = 0 [, resource $context ]] )  	//  Пишет строку в файл
+																											//  Функция идентична последовательным успешным вызовам функций fopen(), fwrite() и fclose().
+	
+	string file_get_contents ( string $filename [, bool $use_include_path = false [, resource $context [, int $offset = 0 [, int $maxlen ]]]] )												
+																		// Читает содержимое файла в строку
+
+	
+Строки
+	string implode ( string $glue , array $pieces )  					 // implode — Объединяет элементы массива в строку с разделителем $glue
+	
+	array explode ( string $delimiter , string $string [, int $limit = PHP_INT_MAX ] )		// Возвращает массив строк, полученных разбиением строки string с использованием delimiter в качестве разделителя.
+	
+	string substr ( string $string , int $start [, int $length ] ); 				// Возвращает подстроку строки string, начинающейся с start символа по счету и длиной length символов. Можно обрезать N первых или последних символов
+	
+	
+	
+	
+	
+	
+______________________________________________________________________________________________________________________________________________________________________________
+	
+								
+	
+							
+
+	
+	
+	
+	string http_build_query ( mixed $query_data [, string $numeric_prefix [, string $arg_separator [, int $enc_type = PHP_QUERY_RFC1738 ]]] )
+																		// Генерирует URL-кодированную строку запроса из предоставленного ассоциативного (или индексного) массива.
+
+																		
+	bool empty ( mixed $var )											// Проверяет, считается ли переменная пустой. Переменная считается пустой, если она не существует или её значение равно FALSE. 
+																		//  empty() не генерирует предупреждение если переменная не существует.
+																		//  empty() фактически является точным эквивалентом конструкции !isset($var) || $var == false
+																		// ледующие значения воспринимаются как пустые:  "" (пустая строка); 0 (целое число); 0.0 (дробное число); "0" (строка); NULL; FALSE; array() (пустой массив); $var; (переменная объявлена, но не меет значения); 
+														
+	
