@@ -1,2 +1,63 @@
-2:27:00
+	http://www.elisdn.ru/blog/103/yii2-rest-api	
+2:27:00      
 	Практика 
+		Установка yii2  advanced
+		 В коммандной строке OpenServer  В каталоге для будущего проекта
+									composer global require "fxp/composer-asset-plugin:^1.2.0"     (по инструкции то:    php composer.phar global require "fxp/composer-asset-plugin:^1.2.0")
+									composer create-project yiisoft/yii2-app-advanced advanced 2.0.11    	(по инструкции то:   php composer.phar create-project yiisoft/yii2-app-advanced advanced 2.0.11)
+		токен с гитхаба  BLJ34SngAsV4dLMnDRq95Ayfsw05QB_f
+		
+		В адванседе 2 папки web с  index.php     в каталогах  /backend/    и   /frontend/ 
+		 Так можно сделать, что админка будет на одном поддомене, а фронтенд на другом. по умолчанию их нет.
+		 В коммандной строке OpenServer   переходим в корень  /advanced/ 
+									php init				// проинициализируется приложение (выберем 0 режим разработки) 
+		Теперь 'advanced/frontend/web/'	запускает сайт.
+		
+	В файле   /frontend/config/main.php    нужно включить  'urlManager' 
+		По умолчанию 
+									        /*
+											'urlManager' => [
+												'enablePrettyUrl' => true,
+												'showScriptName' => false,
+												'rules' => [
+												],
+											],
+											*/
+	
+		Делаем 					        'urlManager' => [
+											'enablePrettyUrl' => true,
+											'showScriptName' => false,
+											'rules' => [
+												'' => 'site/index',
+												'<_c:[\w-]+>' => '_c>/index',
+												'<_c:[\w-]+>/<id:\d+>' => '_c>/view',
+												'<_c:[\w-]+>/<id:\d+/<_a:[\w-]+>' => '_c>/<_a>',
+											],
+										],
+										
+										
+										
+		В yii2  по умолчанию  '\advanced\console\migrations\m130524_201442_init.php'      имеется миграция для создания таблицы user (пока оставляем без изменения).
+																				Если мы включим миграции, то таблица юзерс создастся. 
+		 Добавим туда еще одну для создания поля с описанием    Юзера.
+										<?php
+										use yii\db\Migration;
+										class m170209_083554_add_profile_fields extends Migration
+										{
+											public function up()
+											{
+												$this->addColumn('{{%user}}', 'description', $this->text());
+											}
+											public function down()
+											{
+												$this->dropColumn('{{%user}}', 'description');
+											}
+										}
+										
+										
+		
+										
+										
+										
+										
+										
