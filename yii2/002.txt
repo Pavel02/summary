@@ -126,17 +126,87 @@
 	Например в виде прописываем
 						<?php $this->registerCss('.container{background: #ccc;}');
 						
+	Можем хитрым путем прямо в виде задать большой кусок JS кода для AJAX запроса
+							<button class="btn btn-success" id="btn">Click me...</button>					
+							<?php
+							$js = <<<JS
+								$('#btn').on('click', function() {
+									$.ajax({
+										url: 'index.php?r=post/index',
+										data: {test: '123'},
+										type: 'GET',
+										success: function(res) {
+											console.log(res)
+										},
+										error: function() {
+											alert('Error!');
+										}
+									})
+								})
+							JS;
+
+							$this->registerJs($js);
+	
 						
-								
-			
+						
+08 Выполнение AJAX запроса.								
+		Если в примере выше данные будем отсылать методом  POST,  то будет ошибка. BAD REQUEST
+		 В Yii есть механизм защиты, что данные пришли именно с формы вашего сайта.
+		 Делается это с помощью генерации одноразового спец токена.
+			В <head>  шаблона надо добавить 
+							    <?= Html::csrfMetaTags() ?>
+		Теперь в коде выше меняем тип на POST  и все должно работать. 
+			При этом содержимое	/PostController	
+							    public function actionIndex()
+								{
+									if (Yii::$app->request->isAjax) {
+							//            print_r($_GET);
+										Yii::$app->request->post();
+										return 'Ajax test';
+									}
+									return $this->render('test');
+								}
+		Можно такую проверку по уникальному ключу отключить. Для этого в контроллере (через метод фильтр)
+		 
+								public function beforeAction($action) 
+								{
+									if ($action->id == 'index' ) {
+										$this-enableCsrValidation = false;			// Отключаем проверку 
+									}	
+									return parent::beforeAction($action)				// Возвращаем отарботку родительского метода. ???
+								}	
 
-
-
-
-
-
-
-
+09 Метаданные страницы 
+		Сейчас в нашем собственном шаблоне для всех страниц тайтл задан статически
+								    <title>Document</title>
+		Пропишем в шаблоне title динамично
+						<title><?= Html::encode($this->title) ?></title>      // Html::encode  для экранирования
+		Теперь 2варианта: 				
+			1) При этом в кажодм файле видов в самом верху до всех  html   мы прописываем (для каждого вида свой title)
+							<?php
+							$this->title = 'Одна статья';		
+							?>
+			2) Но автор рекомендует делать не так, а все  тайтлы, любые метатеги задавать сразу в экшене контроллера.
+										    public function actionShow()
+											{
+												$this->view->title = 'Одна статья!!!';
+												$this->view->registerMetaTag(['name' => 'keywords', 'content' => 'ключевики...']);
+												$this->view->registerMetaTag(['name' => 'description', 'content' => 'описание страницы...']);
+												return $this->render('show');
+											}
+				Теперь на странице в блоке <head> </head> будут и  <title> и <meta name="... > 					
+									
+	Как передавать данные из вида в шаблон? 
+		В виде в самом верху пишем код (например в представленни show.php)
+							<?php $this->beginBlock('block1'); ?>		// Таких  'block1'  может быть сколько угодно
+								<h1>Заголовок страницы</h1>
+							<?php $this->endBlock(); ?>
+		А в шаблоне в нужном нам месте пишем проверку 
+					                <?php if (isset($this->blocks['block1']) ) : ?>		
+										<?php echo $this->blocks['block1'] ?>				// Если  block1 существует, то будет вывод на экран
+									<?php endif; ?>
+		При этом вывод этого значения будет только для вьюхи   show.php (в этом примере)
+	Так можно передавать данные из вида в шаблон.
 
 
 
