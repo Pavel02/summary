@@ -7,3 +7,162 @@
 	Если форма в модели не будет работать с БД, то принято называя модель указывать в конце Form
 	  ContactForm.php    LoginForm.php 
 	  
+	Реализуем контактную форму имя, email, сообщение. 
+		Создаем модель 	'C:\OpenServer\domains\yii.test\basic\models\TestForm.php'  
+									<?php
+
+									namespace app\models;
+									use yii\base\Model;
+
+									class TestForm extends Model
+									{
+										public $name;           // У нас будут 3 поля, поэтому в модели 3 свойства
+										public $email;
+										public $text;
+									}
+	В котролере   'C:\OpenServer\domains\yii.test\basic\controllers\PostController.php'
+									<?php
+
+									namespace app\controllers;
+									use yii\web\Controller;
+									use app\models\TestForm;
+
+
+									class PostController extends Controller
+									{
+										public function actionIndex()
+										{
+											$model = new TestForm();        // Создаем объект модели
+
+											return $this->render('test', compact('model'));     // В вид передаем данные из нашей модели (весь объект передали)
+										}
+									}
+														
+	В виджете  'C:\OpenServer\domains\yii.test\basic\views\post\test.php'	
+									<?php
+									use yii\widgets\ActiveForm;
+									use yii\helpers\Html;
+									?>
+
+									<h1>Test Action</h1>
+
+									<?php $form = ActiveForm::begin(['options' => ['id' => 'testForm']]) ?>       <!-- В форму можем передавать массив параметров -->
+									<?= $form->field($model, 'name')->label('Имя') ?>
+									<?= $form->field($model, 'email')->input('email') ?>
+									<?= $form->field($model, 'text')->label('Текст сообщения')->textarea(['rows' => 5]) ?>
+									<?= Html::submitButton('Отправить', ['class' => 'btn btn-success']) ?>
+									<?php $form::end()?>
+
+									
+	С помощью виджета   ActiveForm   задаем форму 					http://www.yiiframework.com/doc-2.0/yii-widgets-activeform.html
+		С помощью  ActiveField   настраиваем полученные поля		http://www.yiiframework.com/doc-2.0/yii-widgets-activefield.html
+		
+	Зачем мы используем методы классов для задания полей формы, а не пишем их на обычном Html ? 
+		При помощи этих метод формируется спец разметка Html, которая позволит проводить валидацию (поля будут подсвечиваться, выводится сообщения об ошибке валидации).
+		
+	 
+
+11 Валидация данных форм 
+	Возможна и на сервере и также возможна у клиента.
+		http://yiiframework.domain-na.me/doc/guide/2.0/ru/input-validation
+		по сути валидаторы отдельные классы.  про них также можно узнать  в API.
+		
+		В файле модели   'C:\OpenServer\domains\yii.test\basic\models\TestForm.php'   указываем правила с помощью метода rules(). 
+																		
+										public function rules()             // Возвращает массив с правилами для всех полей
+										{
+											return [
+												[['name', 'email'], 'required', 'message' => 'Поле обязательно'],       // Если не будет message, то сообщения на английском
+												['email', 'email'],                                                      // Можем в 'config/web.php/'  добавить настройку  'language' => 'ru', тогда станет на русском
+									//            ['name', 'string', 'min' => 2, 'tooShort' => 'Мало'],                 // поле name текстовое и минимум 2 символа. 'toShort' задает текст сообщения предупреждения
+									//            ['name', 'string', 'max' => 5, 'tooLong' => 'Много']
+												['name', 'string', 'length' => [2, 5] ],                             // Если текст предупреждения по умолчанию нас устраивает, то длину можем задать в одном правиле
+												['name', 'myRule' ],                                                 // Задаем свое правило валидации, которое будет задано отдельной функцией ниже.
+												['text', 'trim']                                      // Псевдо валидатор (будет автоматом обрезать пробелы спереди и сзади.
+											];
+										}
+
+										public function myRule($attr)                                // Наше правило валидации. Причем проверяться оно будет на сервере, а не в браузере у клиента
+										{
+											if (!in_array($attr, ['hello', 'world']) ) {
+												$this->addError($attr, 'Wrong!');
+											}
+										}
+
+		Можем в 'config/web.php/'  добавить настройку  'language' => 'ru', тогда станут стандартные сообщения об ошибках на русском
+
+12 Принятие данных из формы 
+	Пока что будем просто принимать данные от пользователя и валидировать их на сервере.
+	 и если ок, то выведем сообщение об успехе.  
+	
+	При этом по умолчанию все данные из форм в Yii не безопасные, и если мы для них не укажем валидационные правила 
+	 (не укажем в методе rules) то они не будут загружены в модель. Если работаем с БД то соответсвующее поле в таблице будет пустым (не заполнятся).
+				
+	Флеш сообщения в Yii эти данные записываются в сессию, но они одноразовые. После того как мы их запросили, они удаляются.
+	
+		
+	В файле контроллере   'C:\OpenServer\domains\yii.test\basic\controllers\PostController.php'
+										<?php
+
+										namespace app\controllers;
+										
+										use yii\web\Controller;
+										use app\models\TestForm;
+										use yii;
+
+										class PostController extends Controller
+										{
+											public function actionIndex()
+											{
+												$model = new TestForm();        // Создаем объект модели
+																				// Мы должны загрузить данные в эту модель. Есть 2 способа: заполнять в модели свойства
+																				// либо использовать массовую загрузку
+												if ($model->load(Yii::$app->request->post())) {                 // Данные загружены
+													if ($model->validate()) {                                   // и данные провалидированы, то мы что-то делаем.
+														Yii::$app->session->setFlash('success', 'Данные приняты');       // Используем флеш-сообщения в сессии
+														return $this->refresh; 							// В форме по умолчанию сохраняются данные, для их очистки нужен  перезапрос страницы.
+													} else {
+														Yii::$app->session->setFlash('error', 'Ошибка!');                // Задаем в сессию ФлешСообщение с ключом 'error' (по этому ключу сможем обратиться к этому флешсообщению)
+													}
+												};
+
+												return $this->render('test', compact('model'));     // В вид передаем данные из нашей модели (весь объект передали)
+											}
+										}
+	
+	
+	В файле представления    'C:\OpenServer\domains\yii.test\basic\views\post\test.php' 
+								<?php
+								use yii\widgets\ActiveForm;
+								use yii\helpers\Html;
+								?>
+
+								<h1>Test Action</h1>
+
+								<?php if (Yii::$app-> session->hasFlash('success') ): ?>            <!-- hasFlash() проверяем есть ли в сессии Флеш сообщение с ключом  'success' -->
+									<?php echo Yii::$app->session->getFlash('success'); ?>
+								<?php endif; ?>
+
+								<?php if (Yii::$app-> session->hasFlash('error') ): ?>
+									<?php echo Yii::$app->session->getFlash('error'); ?>          <!-- getFlash() Дергаем из сессии ФлешСообщение с ключом  'error' -->
+								<?php endif; ?>
+
+								<?php $form = ActiveForm::begin(['options' => ['id' => 'testForm']]) ?>       <!-- В форму можем передавать массив параметров -->
+								<?= $form->field($model, 'name')->label('Имя') ?>
+								<?= $form->field($model, 'email')->input('email') ?>
+								<?= $form->field($model, 'text')->label('Текст сообщения')->textarea(['rows' => 5]) ?>
+								<?= Html::submitButton('Отправить', ['class' => 'btn btn-success']) ?>
+								<?php $form::end()?> 
+	 
+	 
+	
+		
+		
+		 
+		
+		
+		
+		
+		
+		
+		
