@@ -1,0 +1,57 @@
+
+Практика создания интернет-магазина.
+01 Установка фреймворка.
+	в консоли OpenServera
+				composer global require "fxp/composer-asset-plugin:^1.2.0"
+				composer create-project yiisoft/yii2-app-basic ./ 2.0.11		// Установка в корень каталога
+				exit															// Закрытие консоли 
+	
+	Включение ЧПУ  (4 шага)  изначально сайт доступен   по адресу http://yii2.loc/web/index.php?r=site%2Findex  )
+			.htaccess  в корне сайта
+							Options +FollowSymLinks
+							IndexIgnore */*
+							RewriteEngine on
+
+							RewriteCond %{REQUEST_URI} !^/(web)
+							RewriteRule ^assets/(.*)$ /web/assets/$1 [L]
+							RewriteRule ^css/(.*)$ web/css/$1 [L]
+							RewriteRule ^js/(.*)$ web/js/$1 [L]
+							RewriteRule ^images/(.*)$ web/images/$1 [L]
+							RewriteRule (.*) /web/$1
+
+							RewriteCond %{REQUEST_FILENAME} !-f
+							RewriteCond %{REQUEST_FILENAME} !-d
+							RewriteRule . /web/index.php
+	
+	
+			.htaccess  в каталоге   'web'   
+					RewriteBase /
+
+					RewriteCond %{REQUEST_FILENAME} !-f
+					RewriteCond %{REQUEST_FILENAME} !-d
+
+					RewriteRule . index.php
+					
+	В файле    '/web.php/'   
+		Добавляем 'baseUrl'
+						'request' => [
+							// !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
+							'cookieValidationKey' => '****************************',
+							'baseUrl' => '',                                                // Задаем для ЧПУ
+						],
+		
+		Раскомментируем  	'urlManager'
+	
+	Теперь ЧПУ   сайт доступен   'http://yii2.loc/site/index'	
+
+
+	На GitHub создан пустой репо, далее в локальном репо в ком строке
+					git remote add origin https://github.com/Pavel02/yii2-e-shop.git
+					git push -u origin master
+					
+					
+					
+				
+				
+				
+				
