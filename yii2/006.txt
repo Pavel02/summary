@@ -1,0 +1,116 @@
+
+19. Установка расширений из консоли.
+	Под фреймворк  Yii написано много расширений. Если есть какая-то задача, есть смысл поискать расширения.
+		Много на офф сайте 
+					http://www.yiiframework.com/extensions/
+	Также есть в документации API 2.0 				
+	Рассмотрим вот это 		http://www.yiiframework.com/doc-2.0/ext-jui-index.html  
+	
+	Самое удобная установка   это через консоль.
+								composer require --prefer-dist yiisoft/yii2-jui			// для OpenServer	
+	После установки в файле вида  	'test.php'  где наша форма  добавим 
+								<?php $form = ActiveForm::begin(['options' => ['id' => 'testForm']]) ?>
+								<?= $form->field($model, 'name')?>
+								<?= $form->field($model, 'email')->input('email')?>
+						<?= yii\jui\DatePicker::widget(['name' => 'attributeName']) ?>					// Так получим поле календаря. Уже русифицированное! (в config/web.php установлено  'ru') 
+								<?= $form->field($model, 'text')->textarea(['rows' => 5])?>
+								<?= Html::submitButton('Отправить', ['class' => 'btn btn-success'])?>
+								<?php ActiveForm::end() ?>
+	
+	По сути все расширения устанавливаются через  Composer  в одну строку.
+	
+20. Установка расширений без Composera  
+				http://rmcreative.ru/blog/post/kak-postavit-rasshchirenie-na-yii-2.0-bez-composer
+	Рекомендация установить популярный редактор для Yii	
+				https://github.com/MihailDev/yii2-ckeditor		
+				
+				
+	
+	
+21. Создание ЧПУ.
+	Пока что обращение к ресурсам сайта выглядит примерно так   'http://yii.test/web/index.php?r=post%2Findex'
+		Для ЧПУ нам нужен .htaccess  в корне приложения и второй .htaccess  в каталоге   'web'.
+				.htaccess  в корне сайта
+							Options +FollowSymLinks
+							IndexIgnore */*
+							RewriteEngine on
+
+							RewriteCond %{REQUEST_URI} !^/(web)
+							RewriteRule ^assets/(.*)$ /web/assets/$1 [L]
+							RewriteRule ^css/(.*)$ web/css/$1 [L]
+							RewriteRule ^js/(.*)$ web/js/$1 [L]
+							RewriteRule ^images/(.*)$ web/images/$1 [L]
+							RewriteRule (.*) /web/$1
+
+							RewriteCond %{REQUEST_FILENAME} !-f
+							RewriteCond %{REQUEST_FILENAME} !-d
+							RewriteRule . /web/index.php
+	
+	
+			.htaccess  в каталоге   'web'   
+					RewriteBase /
+
+					RewriteCond %{REQUEST_FILENAME} !-f
+					RewriteCond %{REQUEST_FILENAME} !-d
+
+					RewriteRule . index.php
+	
+	
+		В файле  'C:\OpenServer\domains\yii.test\basic\config\web.php'  
+			Нам нужно раскомментировать   urlManager					// Подробнее здесь  https://nix-tips.ru/yii2-api-guides/guide-ru-runtime-routing.html
+						 'urlManager' => [
+							'enablePrettyUrl' => true,
+							'showScriptName' => false,
+							'suffix' => '.html',						// Будет в конец строки добавлять  .html 
+							'rules' => [
+								[							
+									'pattern' => '',					// Здесь 3 строчки правил для главной страницы. Чтобы не добавлялось  .html  
+									'route' => 'site/index',
+									'suffix' => ''
+								],
+				//                'about' => 'site/about',              // Можно задавать вручную
+				//                'contact' => 'site/contact',
+								'<action:(about|contact|login)>' => 'site/<action>',   // Можно через регулярные выражения.
+				//				'<action:\w+>' => 'site/<action>',   			// Так любой экшн будет попадать.
+								
+							],
+						],
+		Установить там же в request   baseUrl => ''
+						   'request' => [
+								// !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
+								'cookieValidationKey' => 'fbIfvh0TC6z35n_qobcdRekM58xU4LmK',
+								'baseUrl' => '',
+							],
+	
+	Теперь главная страница сайта  http://yii.test/  
+	
+	
+	Настоятельно рекомендовано задавать ссылки через 
+						use yii\helpers\Url;
+						
+						// Url::to() вызывает UrlManager::createUrl()  для создания URL 
+						<?= Html::a('Home', Url::to('/')) ?>			//ссылка на главную
+						<?= Html::a('About', Url::to(['/about'])) ?>			//ссылка на 
+						<?= Html::a('Contact', Url::to(['/contact'])) ?>			//ссылка на 
+						
+						
+						
+22. Gii  генерация кода 						
+	Автоматизация создания приложения. 
+						Подробнее 	http://yiiframework.domain-na.me/doc/guide/2.0/ru/start-gii
+		http://yii.test/gii 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

@@ -1,0 +1,168 @@
+
+16. Запись данных в БД. 
+		Создадим в тестовой БД  еще одну таблицу.
+						CREATE TABLE `posts` (
+						  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+						  `name` varchar(255) NOT NULL,
+						  `email` varchar(255) DEFAULT NULL,
+						  `text` text NOT NULL,
+						  PRIMARY KEY (`id`)
+						) ENGINE=InnoDB DEFAULT CHARSET=utf8
+						
+	Использовать будем форму из модели     TestForm.php   но изменим
+						<?php
+
+						namespace app\models;
+						use yii\base\Model;
+						use yii\db\ActiveRecord;
+
+						class TestForm extends ActiveRecord{
+						    public static function tableName()
+							{
+								return 'posts';
+							}
+
+						//    public $name;                 // когда   extends Model  то поля формы ввода должны быть объявлены как свойсва
+						//    public $email;                //  иначе будет ошибка. А вот в случае с ActiveRecord  это можно не делать. Yii  сделает это автоматически
+						//    public $text;
+
+							public function attributeLabels(){
+								return [
+									'name' => 'Имя',
+									'email' => 'E-mail',
+									'text' => 'Текст сообщения',
+								];
+							}
+
+							public function rules(){
+								return [
+									[ ['name', 'text'], 'required' ],
+									[ 'email', 'email' ],
+								];
+							}
+	
+	Тогда в контроллере указываем (ручная загрузка данных)
+							        $model = new TestForm();
+									$model->name = 'Автор';             // Заполняем данные в модель. Пока что вручную.
+									$model->email = 'mail@mail.com';
+									$model->text = 'Текст сообщения';
+									$model->save();                       // Сохраняет свойства объекта модели в БД 
+		// Здесь не вызваем метод validate(), т.к. он по умолчанию включен в  метод  =>save()
+	
+	(автоматическая загрузка данных) в контроллере 
+									$model = new TestForm();
+									if( $model->load(Yii::$app->request->post()) ){
+										if( $model->save() ){
+											Yii::$app->session->setFlash('success', 'Данные приняты');
+											return $this->refresh();
+										}else{
+											Yii::$app->session->setFlash('error', 'Ошибка');
+										}
+									}
+	При автоматической загрузке данных обязательно для каждого поля писать правила валидации
+									public function rules() 
+									{
+										return [
+											[['name', 'text'], 'required'],
+											['email', 'safe'],					// safe  говорит о том что поле  email  считать безопасным и сохранять в БД как есть.
+										];
+									}
+	
+	
+17. Обновление и удаление данных из БД.
+	метод ->save()  может исполльзоваться   как insert он срабатывает  (когда объект ActiveRecord задаем оператором new  )
+		как update он срабатывает когда мы создаем объект с помощью запроса на получение данных.
+	В контолере пишем 
+				        $posts = TestForm::findOne(3);      // Создаем новый объект с выборкой 3 поста
+				//        print_r($posts);                  // Распечатываем для себя убедиться
+						$posts->email = '222@555.ru';       // Вручную задаем занчения поля  email  для  3 поста
+						$posts->save();                     // Сохраняем изменение в БД
+	
+	Удаление записи
+		Пишем в контролере
+			        $posts = TestForm::findOne(2);
+					$posts->delete();
+		
+	Можем удалять сразу несколько записей 
+					TestForm::deleteAll(['>', 'id', 3]);    // Формат записи такой же как и при получении данных.
+															// Здесь будет аналогично   DELETE FROM 'posts' WHERE 'id'>3 
+	
+	Если мы передадим метод без параметров, то будут удалены полностью все данные из таблицы
+					TestForm::deleteAll();
+	
+	
+	
+	
+18. Виджеты в Yii.
+		Виджеты - это некоторая логика, которую мы можем использовать в видах для реализации повторяющихся действий.
+			(например меню, которое повторяется от страницы к странице, его можно вынести в виджет) .
+			(какие-то вещи в футере, сайдбарах)
+			Можем использовать сторонние виджеты, можем свои сделать.
+			
+		Создаем каталог /components/ MyWidget.php 
+												<?php
+
+												namespace app\components;
+												use yii\base\Widget;
+
+												class MyWidget extends Widget
+												{
+													public $name;                   // чтобы использовать параметры мы должны объявить их как публичное свойство
+
+													public function init()          // Метод init() занимается нормализацией свойств виджета
+													{
+														parent::init();             // Мы обязательно должны выполнить родительский метод.
+														if ($this->name === null) $this->name = 'Гость';    // Проверяем задано ли свойство, если нет то задаем значение по умолчанию.
+													}
+
+													public function run()
+													{
+												//        return "<h1>{$this->name}, это твой день, мир!</h1>";
+														return $this->render('my', ['name' => $this->name]);
+													}
+												}
+		А в виде пишем 
+					<?php
+					use app\components\MyWidget;
+					?>
+					<h1>Show Action</h1>
+					<?php echo MyWidget::widget(['name' => 'Вася']); ?>
+	
+	
+		В виджетах мы можем подгружать нужный нам вид, как мы это делаем и контролерах. Методом rander().
+		Виды для виджета хранятся в 	'components/views/'   и называется так же как и виджет  (для текущего примера  my.php)
+					'components/views/my.php'		
+								<h1><?= $name ?> это твой день, мир!</h1>
+		
+	В примере выше мы передаем параметр, но возможен вывод пользовательского контента внутри виджета.
+		Для этого нужно использовать два метода    <?php MyWidget::begin() ?>     <?php MyWidget::end() ?>
+		 Между вызовами которых можем помещать нужный нам контент. B делать с ним что нам нужно.
+				'/components/ MyWidget.php' 						
+										namespace app\components;
+										use yii\base\Widget;
+
+										class MyWidget extends Widget
+										{
+											public $name;                   // чтобы использовать параметры мы должны объявить их как публичное свойство
+
+											public function init()          // Метод init() занимается нормализацией свойств виджета
+											{
+												parent::init();             // Мы обязательно должны выполнить родительский метод.
+												// if ($this->name === null) $this->name = 'Гость';    // Проверяем задано ли свойство, если нет то задаем значение по умолчанию.
+												ob_start();                 // Буферизируем весь вывод
+											}
+
+											public function run()
+											{
+												$content = ob_get_clean();
+												$content = mb_strtoupper($content, 'utf-8');                     // Все что в буфере вывода будет переведено в нижний регистр
+												return $this->render('my', compact($content));
+										//        return "<h1>{$this->name}, это твой день, мир!</h1>";
+										//        return $this->render('my', ['name' => $this->name]);
+											}
+										}
+		 
+		 
+		
+	
+	
