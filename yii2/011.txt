@@ -1,0 +1,142 @@
+
+04 Виджет "Меню категорий" Часть1 
+	В верстке список меню категорий товаров слева   выводится аккордеоном с ограничением в два подменю. 
+	У нас будет в MenuWidget  будет использовано более гибкое решение.
+		
+	ul>li*5>a{Item} + TAB   горяч клавиши в PHPStorm
+	
+	Список не хотел работать помогло прописывание путей в AppAssets  с относительных на абсолютные.
+	
+	В файле '/components/MenuWidget.php
+							<?php
+
+							namespace app\components;
+							use yii\base\Widget;
+							use app\models\Category;
+
+							class MenuWidget extends Widget
+							{
+								public $tpl;        // template От него будет зависеть будет это Категории для внутренней админки, или Посетителя сайта.  Соответсвенно будет или select   или   ul
+								public $data;       // В этом свойстве будут храниться все записи категорий из БД.  (ввиде массива).
+								public $tree;       // Здесь будет результат функции, которая из обычного массива $data  будет создавать  массив-дерево
+								public $menuHtml;   // Здесь будет храниться готовый HTML  код в зависимости от того шаблона, который будет храниться в свойстве  $tpl
+
+								public function init() {
+									parent::init();
+									if ($this->tpl === null) {
+										$this->tpl = 'menu';
+									}
+									$this->tpl .= '.php';
+								}
+
+								public function run()
+								{
+							//        $this->data = Category::find()->all();           // в переменной   data  будет массив объектов
+							//        $this->data = Category::find()->asArray()->all();   // Мы хотим вернуть массив массивов
+									$this->data = Category::find()->indexBy('id')->asArray()->all();   // Мы хотим вернуть массив массивов И чтобы ключи совпадали с идентифкатором (добавили метод ->indexBy()  )
+									$this->tree = $this->getTree();
+									$this->menuHtml = $this->getMenuHtml($this->tree);
+							//        debug($this->tree);                              // Распечатываем для отладки, просматриваем разные моменты.
+									return $this->menuHtml;
+								}
+
+								protected function getTree()        // метод проходит в цикле под одномерному массиву и из него строит дерево.
+								{
+									$tree = [];
+									foreach ($this->data as $id=>&$node) {
+										if (!$node['parent_id'])
+											$tree[$id] = &$node;
+										else
+											$this->data[$node['parent_id']]['childs'][$node['id']] = &$node;
+									}
+									return $tree;
+								}
+
+								protected function getMenuHtml($tree)       // Метод проходится в цикле по дереву. Берет каждый элемент и передает затем параметром
+								{
+									$str = '';                              // в эту переменную будем помещать готовый HTML код
+									foreach ($tree as $category) {
+										$str .= $this->catToTemplate($category);    //  в метод catToTemplate   каждый элемент дерева передается параметром
+									}
+									return $str;
+								}
+
+								protected function catToTemplate($category)     // Метод принимает параметром переданный элемент, помещает его в шаблон
+								{
+									ob_start();                                     // Чтобы не происходило вывода в браузер, мы используем буферизацию
+									include __DIR__ . '/menu_tpl/' . $this->tpl;
+									return ob_get_clean();
+								} 
+							}
+							
+							
+05 Виджет "Меню категорий" Часть2 
+	Стоит использовать кеширование. так как сейчас постоянно используется запрос к БД    ' SELECT * FROM category'.
+	 Можно оптимизировать кешируя данные. Тогда нам не нужно будет каждый раз делать запрос к БД, строить дерево, походить по нему формируя HTML код.
+	 
+	Также нужно сформировать ссылки 
+		Изначально было так, и можем в ручную задавать ссылки, но это неверно
+							<li>
+								<a href="">
+									<?= $category['name'] ?>                          <!-- Вывод название категории -->
+									<?php if (isset($category['childs'])): ?>       <!-- Категорию считаем родительской, если у нее есть свойство  child   -->
+										<span class="badge pull-right">
+											<i class="fa fa-plus"></i>              <!-- Если категория родительская то выводим  +   -->
+										</span>
+									<?php endif; ?>
+								</a>
+								<?php if (isset($category['childs'])): ?>
+									<ul>
+										<?= $this->getMenuHtml($category['childs']) ?>
+									</ul>
+								<?php endif; ?>
+							</li>
+ 
+	прописываем формирование ссылок при помощи Хелпера 
+							<a href="<?= \yii\helpers\Url::to(['category/view', 'id' => $category['id']]) ?>">
+	Будет формироваться ссылка, например 		'yii2.loc/category/view?id=24'
+	Если не нравится такая ссылка, то можем легко ее изменить, но Мы не лезем в код и не правим ссылки. 
+		В файле '/config/web.php'	добавляем правило  rules
+					        'urlManager' => [
+								'enablePrettyUrl' => true,
+								'showScriptName' => false,
+								'rules' => [
+									'category/<id:\d+>' => 'category/view',
+								],
+							],
+	Ссылка была 	'yii2.loc/category/view?id=24'	   стала   		'yii2.loc/category/24'
+	
+	
+	Соответсвенный класс    cache      методы    get (для извлечения)    и   set (для записи в кеш). 
+	По умолчанию файл настроен из коробки в   '/config/web.php' 
+								'cache' => [
+									'class' => 'yii\caching\FileCache',
+								],
+	
+ 
+	В файле   '/components/MenuWidget.php'   в методе  run()   настроим кеширование
+								 public function run()
+								{
+									// get cache    Пробуем получить информацию из  кеша
+									$menu = Yii::$app->cache->get('menu');      // Пытаемся получить данные из кеша по ключу (назовем ключ 'menu')
+									if ($menu) return $menu;                    // Если у нас будет что-то получено из кеша, то сразу возвращаем.
+
+									$this->data = Category::find()->indexBy('id')->asArray()->all();   // Мы хотим вернуть массив массивов И чтобы ключи совпадали с идентифкатором (добавили метод ->indexBy()  )
+									$this->tree = $this->getTree();
+									$this->menuHtml = $this->getMenuHtml($this->tree);
+									//set cache   Формируем кеш
+									Yii::$app->cache->set('menu', $this->menuHtml, 60);         // 60 секунд  это время на сколько формируется файл кеша.   в Yii  кеш  хранится в каталоге   'runtime'
+
+									return $this->menuHtml;
+								}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
