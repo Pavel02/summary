@@ -1,0 +1,99 @@
+
+06. Вывод популярных товаров
+
+	в таблице  'product'    для популярных продуктов поле  'hit'  соответствует 1, по умолчанию значение 0.
+	
+	Создаем контроллер, который будет работать с категориями.  'CategoryController'  
+		Вообще контроллеры рассширяют класс Controller, но мы сделаем промежуточный 'AppController' 
+		 в котором будет общая логика для использования во всех контроллерах.
+		 
+		
+	Задание действия по умолчанию
+		В файле '/config/web.php'    в переменной  
+					$config = [ ...  'defaultRoute' => 'category/index',  ... ]			// Контроллер  category  экшн  index 
+		Без прямого задания (по умолчанию) будет  'site/index'
+		
+	
+	Под контроллер 'Category'  создаем  соответсвующий вид  '\views\category\index.php'
+	 В него копируем всю верстку из вида '\views\category\index.php'  
+	 А в контроле   'CategoryController'   пишем экшн 
+							public function actionIndex()
+							{
+								// Переменная $hit обращается к модели  Product (которая ActiveRecord) и выбирает все с условием hit = 1
+								// Определенное кол-во limit(6)
+								$hits = Product::find()->where(['hit' => '1'])->limit(6)->all();
+								// debug($hits);   // Распечатка для отладки
+								// Значение переменной передаем в вид с помощью ф-ции compact() , но можно массивом.
+								// Теперь массив   hits  будет доступен в виде, там можем пройтись по нему циклом и вывести нужные значения.
+								return $this->render('index', compact('hits'));
+							}
+	
+	А в вид можем вставить код (конкретно здесь будет выводить 6 карточек тоавара).
+						<?php if (!empty($this)) : ?>
+						<div class="features_items"><!--features_items-->
+							<h2 class="title text-center">Features Items</h2>
+							<?php foreach ($hits as $hit) : ?>
+							<div class="col-sm-4">
+								<div class="product-image-wrapper">
+									<div class="single-products">
+										<div class="productinfo text-center">
+											<?= Html::img("@web/images/products/{$hit->img}", ['alt' => $hit->name]) ?>
+											<h2>$<?= $hit->price ?></h2>
+											<p><?= $hit->name ?></p>
+											<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+										</div>
+		<!--                                <div class="product-overlay">-->
+		<!--                                    <div class="overlay-content">-->
+		<!--                                        <h2>$--><?//= $hit->price ?><!--</h2>-->
+		<!--                                        <p>--><?//= $hit->name ?><!--</p>-->
+		<!--                                        <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>-->
+		<!--                                    </div>-->
+		<!--                                </div>-->
+										<?php if ($hit->new) : ?>
+											<?= Html::img("@web/images/home/new.png", ['alt' => 'Новинка', 'class' => 'new']); ?>
+										<?php endif;  ?>
+										<?php if ($hit->sale) : ?>
+											<?= Html::img("@web/images/home/sale.png", ['alt' => 'Распродажа', 'class' => 'new']); ?>
+										<?php endif;  ?>
+									</div>
+									<div class="choose">
+										<ul class="nav nav-pills nav-justified">
+											<li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+											<li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>
+										</ul>
+									</div>
+								</div>
+							</div>
+
+							<?php endforeach; ?>
+						</div><!--features_items-->
+						<?php endif; ?>
+	
+	
+	
+07 Вывод товаров категорий. 
+	В urlManager  у нас есть правило  (в нем предполагается числовой параметр - это номер категории)
+					'rules' => [
+						'category/<id:\d+>' => 'category/view',
+					],
+	В контроллере   'CategoryController'  реализуем экшн отвечающий за вывод товаров в категориях. 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+					

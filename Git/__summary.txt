@@ -1,0 +1,15 @@
+
+		git branch -v 						// список существующих веток
+					
+		git branch new-version			// создание новой ветки   'new-version'
+				
+		git checkout new-version   		// переход на новую ветку 'new-version'
+				
+		git commit -m"блалабал"					// 
+				
+		git push origin dev-new-version			// Пушим коммит в удаленный репо с псевдонимом 'origin' с одновременным 
+													// созданием в удаленном репо ветки  'dev-new-version'
+													
+		git pull origin dev-new-version			// стягиваем с репо  origin  изменения ветки  'dev-new-version'
+		
+		
