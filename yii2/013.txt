@@ -1,0 +1,94 @@
+
+08. Метод для вывода Метатегов
+		Вывод татйлов, ключевых слов, описания и некоторых других  
+		
+		Тайтл, дескриптион, кейвордс по мнению автора курса удобнее получить прямо в контролере.
+		Причем, чтобы не дублировать код в каждом контролере, лучше вынести его в общий контролер.
+		
+		В файле '\controllers\AppController.php'
+								<?php
+
+								namespace app\controllers;
+
+								use yii\web\Controller;
+
+								class AppController extends Controller
+								{
+									protected function setMeta($title = null, $keywords = null, $description = null)
+									{
+										$this->view->title = $title;
+										$this->view->registerMetaTag(['name' => 'keywords', 'content' => "$keywords"]);         // Здесь кавычки. Мы в любом случае выведем пустую строку.
+										$this->view->registerMetaTag(['name' => 'description', 'content' => "$description"]);
+									}
+								}
+			
+		В экшене файла   '\controllers\CategoryController'   теперь имеется общий метод  setMeta
+								 public function actionView($id)
+								{
+									// Для получения параметра id из массива get  мы можем  $_GET['id']  и это должно работать
+									// Но правильнее использовать класс Request и его метод get()
+									$id = Yii::$app->request->get('id');
+									// debug($id);      // Отладочная печать, проверить, что получаем   id
+									$products = Product::find()->where(['category_id' => $id])->all();
+									$category = Category::findOne($id);                                         // получаем название категории из таблицы
+									$this->setMeta('E_SHOPPER | ' . $category->name, $category->keywords, $category->description);      // Из таблицы получаем значения метатегов.
+
+									return $this->render('view', compact('products', 'category'));
+								}
+			
+			
+			
+		Также зададим логотип сайта как ссылку  на главную страницу.
+						<a href="<?= \yii\helpers\Url::home() ?>"><?= Html::img('@web/images/home/logo.png', ['alt' => 'E_SHOPPER']) ?></a>
+						
+						
+						
+09. Постраничная навигация.
+		Для создания нам понадобится спец класс      http://www.yiiframework.com/doc-2.0/yii-data-pagination.html
+		
+		
+				    public function actionView($id)
+					{
+						// Для получения параметра id из массива get  мы можем  $_GET['id']  и это должно работать
+						// Но правильнее использовать класс Request и его метод get()
+						$id = Yii::$app->request->get('id');
+						// debug($id);      // Отладочная печать, проверить, что получаем   id
+				//        $products = Product::find()->where(['category_id' => $id])->all();     // Продукты будем получать через пагинацию ниже.
+						$query = Product::find()->where(['category_id' => $id]);
+						$pages = new Pagination([
+							'totalCount' => $query->count(),
+							'pageSize' => 3,					//  По умолчанию около 20 записей, но у нас товаров мало и для наглядности сделаем 3
+							'forcePageParam' => false,          // Без этих параметров будет  Url  http://yii2.loc/category/29?page=1&per-page=3
+							'pageSizeParam' => false,
+						]);                 
+						$products = $query->offset($pages->offset)->limit($pages->limit)->all();
+						$category = Category::findOne($id);                                         // получаем название категории из таблицы
+						$this->setMeta('E_SHOPPER | ' . $category->name, $category->keywords, $category->description);      // Из таблицы получаем значения метатегов.
+
+						return $this->render('view', compact('products', 'pages', 'category'));
+					}
+		
+		Для чпу добавим в UrlManager. При этом более узкое правило должно быть выше.
+					 'rules' => [
+						'category/<id:\d+>/page/<page:\d+>' => 'category/view',         // это правило для чпу страниц категорий    http://yii2.loc/category/29/page/2
+						'category/<id:\d+>' => 'category/view',
+					],
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+						
+						
+						
+						
