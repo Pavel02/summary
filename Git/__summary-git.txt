@@ -13,3 +13,14 @@
 		git pull origin dev-new-version			// стягиваем с репо  origin  изменения ветки  'dev-new-version'
 		
 		
+		git remote -v 						// посмотреть какие удаленные репозитории подключены
+		
+		git branch -d branch-name			// Чтобы удалить ветку в локальной рабочей копии
+
+		git push origin --delete branch-name		// Чтобы удалить ветку в удаленном репозитории
+		
+		
+		
+		
+		
+		

@@ -1,0 +1,113 @@
+
+10. Карточка товара. Часть1
+11. Карточка товара. Часть2. 
+		Как правило ссылка на карточку это название товара и картинка.
+		
+		В файлах вида  'views/category/index.php'  и   'views/category/view.php'  имеются циклы, в которыъ 
+		 выводятся имеющиес товары. и там где выводилось просто название, теперь:
+						<p><a href="<?= \yii\helpers\Url::to(['prosuct/view', 'id' => $hit->id]) ?>"><?= $hit->name ?></a></p>
+		Названия товаров, теперь ссылки. 
+	
+	сейчас ссылки имеют вид, наподобие  http://yii2.loc/prosuct/view?id=6 
+	Напишем правило в UrlManager
+						'urlManager' => [
+							'enablePrettyUrl' => true,
+							'showScriptName' => false,
+							'rules' => [
+								'category/<id:\d+>/page/<page:\d+>' => 'category/view',         // это правило для чпу страниц категорий    http://yii2.loc/category/29/page/2
+								'category/<id:\d+>' => 'category/view',
+								'product/<id:\d+>' => 'product/view',                           // это правило для чпу страницы карточки товара   
+							],
+						],
+						
+	Создаем контроллер    'ProductController.php'
+				<?php
+
+				namespace app\controllers;
+
+				use app\models\Category;
+				use app\models\Product;
+				use Yii;
+
+				class ProductController extends AppController
+				{
+					public function actionView($id)
+					{
+							// Получаем id товара из массива  GET.
+						$id = Yii::$app->request->get('id');
+							// Первый вариант с ленивой загрузкой.   В $product  у нас будет храниться объект категории.
+						$product = Product::findOne($id);
+							// Второй вариант с жадной загрузкой
+				//        $product = Product::find()->with('category')->where('id' => $id)->limit(1)->one();
+							// получаем 5 товаров хитов из таблицы продуктов, где поле hit = 1.
+						$hits = Product::find()->where(['hit' => '1'])->limit(5)->all();
+							// реализуем метатеги
+						$this->setMeta('E-Shopper | ' . $product->name, $product->keywords, $product->description);
+						return $this->render('view', compact('product', 'hits'));
+					}
+				}		
+
+				
+	Создаем вид карточки продукта  'views/product/view.php' 
+	  Фрагмент ниже показывает реализацию карусели внизу для товаров хитов.
+				<div class="recommended_items"><!--recommended_items-->
+                    <h2 class="title text-center">recommended items</h2>
+                    <div id="recommended-item-carousel" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner">
+                            <?php $count= count($hits); $i = 0; foreach ($hits as $hit) : ?>
+                                <?php if ($i % 3 == 0) :  ?>
+                                    <div class="item <?php if ($i == 0) echo 'active' ?>">
+                                <?php endif; ?>
+                                    <div class="col-sm-4">
+                                        <div class="product-image-wrapper">
+                                            <div class="single-products">
+                                                <div class="productinfo text-center">
+                                                    <?= Html::img("@web/images/products/{$hit->img}", ['alt' => $hit->name]) ?>
+                                                    <h2>$<?= $hit->price ?></h2>
+                                                    <p><a href="<?= \yii\helpers\Url::to(['product/view', 'id' => $hit->id]) ?>"><?= $hit->name ?></a></p>
+                                                    <button type="button" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php $i++; if ($i % 3 == 0 || $i == $count) : ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                        <a class="left recommended-item-control" href="#recommended-item-carousel" data-slide="prev">
+                            <i class="fa fa-angle-left"></i>
+                        </a>
+                        <a class="right recommended-item-control" href="#recommended-item-carousel" data-slide="next">
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </div>
+                </div><!--/recommended_items-->
+			
+		
+			
+		
+	
+12. Обработка ошибок.
+		Нужно чтобы на странице не существующего товара и странице не существующей категории, 
+		 было корректное сообщение и ошибка 404.
+			Для категории: 
+		 			public function actionView($id)
+					{
+						...............................................
+						$category = Category::findOne($id);                                         // получаем название категории из таблицы
+							// если мы не получили данные категории, то выбрасываем ошибку.
+						if (empty($category))
+							throw new HttpException(404, 'Такой категории нет');
+						...............................................
+					}
+		 
+		аналогично для страницы карточки товара.
+		
+		
+		
+		
+		
+		 
+		 
+		 
