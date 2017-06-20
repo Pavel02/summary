@@ -1,0 +1,102 @@
+
+21. Отправка почты.
+	В Yii используется спец класс.
+	 Он указавается в настройках по умолчанию. Если нужно, то можем испольлзовать свое решение.
+							'components' => [
+								'mailer' => [
+									'class' => 'yii\swiftmailer\Mailer',
+									// send all mails to a file by default. You have to set
+									// 'useFileTransport' to false and configure a transport
+									// for the mailer to send real emails.
+									'useFileTransport' => true,		// Это свойство говорит, о том что реально письма не будут отправляться
+																	// будут складываться в runtime  пример C:\OpenServer\domains\yii2.loc\runtime\mail\20170619-210542-6593-3290.eml
+								],
+							]	
+							
+							
+	Для реальной отправки нужно настроить smtp сервер. Напирмер
+							'components' => [
+								'mailer' => [
+									'class' => 'yii\swiftmailer\Mailer',
+									'useFileTransport' => true,		
+									'useFileTransport' => false,
+									'transport' => [
+										'class' => 'Swift_SmtpTransport',
+										'host' => 'smtp.mail.ru',
+										'username' => 'username',
+										'password' => 'psw',
+										'port' => '465',
+										'encryption' => 'ssl'
+									]
+								],
+							]	
+							
+	В контроллер CartController.php Добавим в экшене отправку письма
+					public function actionView()
+					{
+						$session = Yii::$app->session;
+						$session->open();
+						$this->setMeta('Корзина');
+						$order = new Order();
+						if ($order->load(Yii::$app->request->post())) {
+							$order->qty = $session['cart.qty'];
+							$order->sum = $session['cart.sum'];
+							if ($order->save()) {
+								$this->saveOrderItems($session['cart'], $order->id);
+									// Для целостности данных нужно использовать механизм ТРАНЗАКЦИЙ (в этом курсе не рассмотренно)
+								Yii::$app->session->setFlash('success', 'Ваш заказ принят. Скоро мы с Вами свяжемся для уточнения деталей.');
+										// Отправка письма клиенту. Для отпавки письма админу продублировать код
+									Yii::$app->mailer->compose('order', ['session' => $session])
+										->setFrom(['test@mail.ru' => 'yii2.loc'])
+										->setTo($order->email)
+										->setSubject('Заказ')
+										->send();
+
+									// Если у нас все сохранено, то перед рефреш, очистим корзину
+									$session->remove('cart');
+									$session->remove('cart.qty');
+									$session->remove('cart.sum');
+								return $this->refresh();
+							} else {
+								Yii::$app->session->setFlash('error', 'Ошибка оформления заказа.');
+							}
+						}
+						return $this->render('view', compact('session', 'order'));
+					}
+					
+					
+	Для письма создадим шаблон вида по адресу 'yii2.loc/mail/order.php '
+							    <div class="table-responsive">
+								<table class="table table-hover table-striped" >
+									<thead>
+									<tr>
+										<th>Наименование</th>
+										<th>Количество</th>
+										<th>Цена</th>
+										<th>Сумма</th>
+									</tr>
+									</thead>
+									<tbody>
+									<?php foreach ($session['cart'] as $id => $item) : ?>
+										<tr>
+											<td><?= $item['name'] ?></td>
+											<td><?= $item['qty'] ?></td>
+											<td><?= $item['price'] ?></td>
+											<td><?= $item['qty'] * $item['price']?></td>
+										</tr>
+									<?php endforeach; ?>
+									<tr>
+										<td colspan="3">Итого: </td>
+										<td><?= $session['cart.qty'] ?></td>
+									</tr>
+									<tr>
+										<td colspan="3">На сумму: </td>
+										<td><?= $session['cart.sum'] ?></td>
+									</tr>
+									</tbody>
+								</table>
+							</div>
+
+
+
+					
