@@ -1,0 +1,47 @@
+
+	Ctrl + Alt + S		->File->Settings     	//	Настройки   
+	
+	->File->Settings->Editor->General->Appearance->Show line number  		// Нумерация строк 
+	
+	->File->Settings->Editor->General->Change font size(Zoom) with Ctrl+Mouse		// Смена размера шрифта Ctrl + колесико мыши
+	
+	Ctrl + Tab     	// Меню быстрого переключения между Модулями PhpStorm  
+	Ctrl + Tab     	// Также быстрое переключение между открытыми файлами PhpStorm  
+	
+	ПКМ ->Local History ->Show History    		// Локальная история файла за последние 24 часа
+	
+	Shift + F6   (Refactor ->Rename ->Search for references) 		// переименование файла и связанных с ним файлов
+	
+	->File->Power Save Mode   			// Автомат настройки для быстрого режима. Остваляет основное.
+	
+	->Settings->Keymap   				// Весь список горячих клавиш.
+	
+	Ctrl + Alt + L 			// Форматирование кода по дефолту для языка.
+	
+	Ctrl + F 				// Поиск по файлу
+	
+	Ctrl + R 				// Поиск с заменой
+	
+	Ctrl + D 				// дубликат текущей строки
+	
+	Ctrl + Y 				// удаляет строку целиком
+	
+	Ctrl + Shift + up || down 	// перемещает строку вверх | низ
+	
+	Ctrl + Shift + V 			// История буфера копирования
+	
+	alt + click					// мультивыделение 
+	
+	Ctrl + ЛКМ на переменной 		// Переход каретки в место его объявления.
+	Ctrl + Shift + backspace		// Возврат обратно до перемещения
+	
+	
+	! + Tab 			// html заготовка сниппет 
+	
+	
+	
+	
+	
+	
+	
+	
