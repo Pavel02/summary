@@ -1,4 +1,4 @@
-
+		
 		git config --global user.name "Иван Иванов"    		  //(global - для всех репозиториев будут эти настройки)
 		git config --global user.email ivanov@example.com
 
@@ -6,9 +6,10 @@
 
 		git branch -v 						// список существующих веток
 					
-		git branch new-version			// создание новой ветки   'new-version'
-				
+		git branch new-version			// создание новой ветки   'new-version'	
 		git checkout new-version   		// переход на новую ветку 'new-version'
+	
+		git checkout -b new-version			// Создание с одновременным переходом на новую ветку 'new-version'
 				
 		git commit -m"блалабал"					// 
 				
@@ -20,9 +21,14 @@
 		
 		git remote -v 						// посмотреть какие удаленные репозитории подключены
 		
-		git branch -d branch-name			// Чтобы удалить ветку в локальной рабочей копии
+		git branch -D branch-name			// Чтобы удалить ветку в локальной рабочей копии
 
 		git push origin --delete branch-name		// Чтобы удалить ветку в удаленном репозитории
+		
+		
+		git stash					// Спрятать изменения
+		git stash list					// показать какие есть спрятанные  изменения
+		git stash apply					// вернуть последние спрятанные  изменения 
 		
 		
 		

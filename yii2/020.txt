@@ -1,2 +1,32 @@
 
 24. Список заказов в админке.
+	Для написания кода админки автор курса использует Генератор Кода.
+		Вначале создаем модель  '\modules\admin\models\Order.php' 
+	Потом используя CRUD Generator (по сути создает приложение) Он создаст контроллер и необходимые виды для работы данного приложения. 
+		Уже после этих 2 шагов в нашей админке по адресу 'http://yii2.loc/admin/order' 
+		 будет работать вывод полей из таблицы БД. С рабочими иконками (ссылками на CRUD)
+	
+	Для того, чтобы это действие мы видели здесь 'http://yii2.loc/admin/' 
+		В файле 'yii2.loc\config\web.php'   вносим строку кода 
+							'modules' => [
+									// модуль  с именем   'admin'
+								'admin' => [
+									'class' => 'app\modules\admin\Module',
+										// Указываем в явном виде, какой шаблон использовать 
+									'layout' => 'admin',
+									'defaultRoute' => 'order/index'
+								],
+							],
+		
+	В файле 'yii2.loc\modules\admin\controllers\OrderController.php'   встречается класс   'ActiveDataProvider'.
+	 подробнее о нем можно почитать  
+							https://nix-tips.ru/yii2-api-guides/guide-ru-output-data-providers.html
+							
+	
+	
+	
+	 
+	
+	
+	 
+	
